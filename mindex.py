@@ -9,14 +9,18 @@ from datetime import datetime, timedelta
 #y = yesterday.strftime('%Y-%m-%d')
 #TODO: add graph, report high/low earners
 with open('tickrs.csv','r') as file:
-    tickers = file.readlines()
+    items = file.readlines()
+    base = items[0]
+    tickers = items[1:]
 
 color = ''
 arrow = ""
+
 #represents holdings yfinance doesn't have access to
 #bonds, core position, etc
-index = 21000
+index = float(base)
 prevs = index
+
 all = False
 la = False
 
@@ -71,7 +75,8 @@ if(not last == index):
     save = open('index.csv','a')
     save.write(str(index) + " " + str(datetime.now()) + "\n")
     save.close()
-#inefficient, add clamps
+
+#inefficient, add clamps so we don't unnecessarily compute last/prevs
 if la: pr = prevs
 else: pr = last
 aux(index,prevs)
