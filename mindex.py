@@ -7,7 +7,8 @@ from termcolor import colored
 from datetime import datetime, timedelta
 #yesterday = datetime.now()-timedelta(days=1)
 #y = yesterday.strftime('%Y-%m-%d')
-#TODO: add graph, report high/low earners
+
+#TODO: add graph, make Readme nice, add help message in flags
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -21,9 +22,13 @@ arrow = ""
 index = float(base)
 prevs = index
 
+#whether to show all stocks
 all = False
+#whether to show last price
+#default is previous close
 la = False
 
+#for print color
 def aux(one: float, two: float):
     global color
     global arrow
@@ -37,6 +42,7 @@ def aux(one: float, two: float):
         color = 'white'
         arrow = "no change "
 
+#flags
 try:
     (lst,args) = getopt.getopt(sys.argv[1:],"hal",["help =","all =","last ="])
 except:
@@ -49,34 +55,47 @@ for (opt,val) in lst:
     if opt in ['-l','--last']:
         la = True
 
-def process(row: str):
-    (symbol,weight) = row.split()
-    price=yf.Ticker(symbol).fast_info.last_price
-    prev=yf.Ticker(symbol).fast_info.previous_close
-    aux(price,prev)
-    net = abs(price-prev)
-    perc = (net/prev)*100
-    threshold = 0
-    if(perc>threshold and all):print (colored(symbol + ": " + str(price) + "\n" + arrow + str(net) + arrow + str(perc) + "%",color))
-    global index
-    global prevs
-    index+=(price*float(weight))
-    prevs+=(prev*float(weight))
-
-with ThreadPoolExecutor() as executor:
-    executor.map(process, tickers)
-
 save = open('index.csv','r')
 vals = save.readlines()
 (l,d,t) = (vals[len(vals)-1]).split()
 last = float(l)
 save.close()
+
+#get info and process it
+def process(row: str):
+    (symbol,weight) = row.split()
+    w = float(weight)
+    price=yf.Ticker(symbol).fast_info.last_price
+    #flag check
+    if(la):prev=last
+    else:prev=yf.Ticker(symbol).fast_info.previous_close
+
+    aux(price,prev)
+    net = abs(price-prev)
+    perc = (net/prev)*100
+    #shows big changes
+    threshold = 5 #>5% change
+
+    if(perc>threshold or all):print (colored(symbol + ": " + str(price) + "\n" + arrow + str(net) + arrow + str(perc) + "%",color))
+
+    #update indexes
+    global index
+    index+=(price*w)
+    if la:
+        global prevs
+        prevs+=(prev*w)
+
+#multithread it
+with ThreadPoolExecutor() as executor:
+    executor.map(process, tickers)
+
+#adds value to index.csv
 if(not last == index):
     save = open('index.csv','a')
     save.write(str(index) + " " + str(datetime.now()) + "\n")
     save.close()
 
-#inefficient, add clamps so we don't unnecessarily compute last/prevs
+#inefficient, add clamps so we don't unnecessarily compute prevs
 if la: pr = prevs
 else: pr = last
 aux(index,prevs)
