@@ -1,15 +1,13 @@
 from concurrent.futures import ThreadPoolExecutor
 import yfinance as yf
-import csv
 import getopt
 import sys
 import math
 import matplotlib.pyplot as plt
 from termcolor import colored
-from datetime import datetime, timedelta
-#yesterday = datetime.now()-timedelta(days=1)
-#y = yesterday.strftime('%Y-%m-%d')
+from datetime import datetime
 
+#TODO: improve graph readability, fix equality check for last value
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -67,19 +65,18 @@ def parseDT(str):
     return datetime.strptime(str.rstrip(),format)
 
 #flags
-try:
-    (lst,args) = getopt.getopt(sys.argv[1:],"halg",["help =","all =","last =","graph ="])
-except:
-    print("Error parsing flags")
+try:(lst,args) = getopt.getopt(sys.argv[1:],"halg",["help =","all =","last =","graph ="])
+except:print("Error parsing flags")
 for (opt,val) in lst:
     if opt in ['-h','--help']:
         rows = [
             ["-a", "--all",   "Print all tickers."],
             ["-l", "--last",  "Compute change based on last index value."],
-            ["-g", "--graph", "Show a graph of past index values"],
+            ["-g", "--graph", "Show a graph of past index values."],
             ["-h", "--help", "Print help message and exit."]
         ]
         alignPrint(rows)
+        print("Warning: last only affects the index value")
         exit()
     if opt in ['-a','--all']:
         all = True
@@ -104,6 +101,7 @@ for (opt,val) in lst:
 save = open('index.csv','r')
 vals = save.readlines()
 (l,d,t) = (vals[len(vals)-1]).split()
+day = d
 last = float(l)
 save.close()
 
@@ -112,9 +110,7 @@ def process(row: str):
     (symbol,weight) = row.split()
     w = float(weight)
     price=yf.Ticker(symbol).fast_info.last_price
-    #flag check
-    if(la):prev=last
-    else:prev=yf.Ticker(symbol).fast_info.previous_close
+    prev=yf.Ticker(symbol).fast_info.previous_close
 
     aux(price,prev)
     net = abs(price-prev)
