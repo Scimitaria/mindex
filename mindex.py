@@ -3,6 +3,7 @@ import yfinance as yf
 import csv
 import getopt
 import sys
+import math
 from termcolor import colored
 from datetime import datetime, timedelta
 #yesterday = datetime.now()-timedelta(days=1)
@@ -63,14 +64,15 @@ def alignPrint(rows):
 
 #flags
 try:
-    (lst,args) = getopt.getopt(sys.argv[1:],"hal",["help =","all =","last ="])
+    (lst,args) = getopt.getopt(sys.argv[1:],"halg",["help =","all =","last =","graph ="])
 except:
     print("Error parsing flags")
 for (opt,val) in lst:
     if opt in ['-h','--help']:
         rows = [
-            ["-a", "--all",  "Print all tickers."],
-            ["-l", "--last", "Compute change based on last index value."],
+            ["-a", "--all",   "Print all tickers."],
+            ["-l", "--last",  "Compute change based on last index value."],
+            ["-g", "--graph", "Show a graph of past index values"]
             ["-h", "--help", "Print help message and exit."]
         ]
         alignPrint(rows)
@@ -79,6 +81,18 @@ for (opt,val) in lst:
         all = True
     if opt in ['-l','--last']:
         la = True
+    if opt in ['-g','--graph']:
+        with open ('index.csv','r') as file:
+            xAxis = []
+            yAxis = []
+            for line in file.readlines():
+                (value,date,time) = line.split()
+                dt = date + ' ' + time
+                xAxis.append(dt)
+                yAxis.append(math.floor(float(value)))
+            print(xAxis)
+            print(yAxis)
+            exit()
 
 save = open('index.csv','r')
 vals = save.readlines()

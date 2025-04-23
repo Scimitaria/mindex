@@ -10,4 +10,7 @@ BTEAF 1000
 GME 420
 ```
 
-index.csv holds save data for past index values and their dates.
+index.csv holds save data for past index values and their dates:
+```
+420.69 2001-09-11 15:27:30.806697
+```
