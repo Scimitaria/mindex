@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 #yesterday = datetime.now()-timedelta(days=1)
 #y = yesterday.strftime('%Y-%m-%d')
 
-#TODO: add graph, make Readme nice, add help message in flags
+#TODO: add graph
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -42,6 +42,25 @@ def aux(one: float, two: float):
         color = 'white'
         arrow = "no change "
 
+def alignPrint(rows):
+    # Build up a max length of each column
+    lengths = {}
+    for row in rows:
+        for i in range(len(row)):
+            lengths[i] = max(lengths.get(i, 0), len(row[i]))
+
+    for row in rows:
+        # For each cell, padd it by the max length
+        output = ""
+        for i in range(len(row)):
+            if len(output) > 0:
+                # Add a space between columns
+                output += " "
+            cell = row[i] + " " * lengths[i]
+            cell = cell[:lengths[i]]
+            output += cell
+        print(output)
+
 #flags
 try:
     (lst,args) = getopt.getopt(sys.argv[1:],"hal",["help =","all =","last ="])
@@ -49,7 +68,13 @@ except:
     print("Error parsing flags")
 for (opt,val) in lst:
     if opt in ['-h','--help']:
-        print("help")
+        rows = [
+            ["-a", "--all",  "Print all tickers."],
+            ["-l", "--last", "Compute change based on last index value."],
+            ["-h", "--help", "Print help message and exit."]
+        ]
+        alignPrint(rows)
+        exit()
     if opt in ['-a','--all']:
         all = True
     if opt in ['-l','--last']:
