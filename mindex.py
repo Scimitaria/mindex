@@ -4,12 +4,12 @@ import csv
 import getopt
 import sys
 import math
+import matplotlib.pyplot as plt
 from termcolor import colored
 from datetime import datetime, timedelta
 #yesterday = datetime.now()-timedelta(days=1)
 #y = yesterday.strftime('%Y-%m-%d')
 
-#TODO: add graph
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -62,6 +62,10 @@ def alignPrint(rows):
             output += cell
         print(output)
 
+def parseDT(str):
+    format = "%Y-%m-%d %H:%M:%S.%f"
+    return datetime.strptime(str.rstrip(),format)
+
 #flags
 try:
     (lst,args) = getopt.getopt(sys.argv[1:],"halg",["help =","all =","last =","graph ="])
@@ -72,7 +76,7 @@ for (opt,val) in lst:
         rows = [
             ["-a", "--all",   "Print all tickers."],
             ["-l", "--last",  "Compute change based on last index value."],
-            ["-g", "--graph", "Show a graph of past index values"]
+            ["-g", "--graph", "Show a graph of past index values"],
             ["-h", "--help", "Print help message and exit."]
         ]
         alignPrint(rows)
@@ -85,15 +89,18 @@ for (opt,val) in lst:
         with open ('index.csv','r') as file:
             xAxis = []
             yAxis = []
-            for line in file.readlines():
-                (value,date,time) = line.split()
-                dt = date + ' ' + time
-                xAxis.append(dt)
-                yAxis.append(math.floor(float(value)))
-            print(xAxis)
-            print(yAxis)
-            exit()
 
+            for line in file.readlines():
+                (value,dt) = line.split(maxsplit=1)
+                dt=parseDT(dt)
+
+                xAxis.append(dt.timestamp())
+                yAxis.append(math.floor(float(value)))
+
+            plt.plot(xAxis, yAxis)
+            plt.show()
+
+#get last index value
 save = open('index.csv','r')
 vals = save.readlines()
 (l,d,t) = (vals[len(vals)-1]).split()
