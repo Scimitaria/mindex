@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from termcolor import colored
 from datetime import datetime
 
-#TODO: improve graph readability, fix equality check for last value
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -20,7 +19,6 @@ arrow = ""
 #bonds, core position, etc
 index = float(base)
 prevs = index
-
 #whether to show all stocks
 all = False
 #whether to show last price
@@ -41,6 +39,7 @@ def aux(one: float, two: float):
         color = 'white'
         arrow = "no change "
 
+#prints an aligned grid
 def alignPrint(rows):
     # Build up a max length of each column
     lengths = {}
@@ -60,6 +59,7 @@ def alignPrint(rows):
             output += cell
         print(output)
 
+#parses datetime from string
 def parseDT(str):
     format = "%Y-%m-%d %H:%M:%S.%f"
     return datetime.strptime(str.rstrip(),format)
@@ -86,15 +86,27 @@ for (opt,val) in lst:
         with open ('index.csv','r') as file:
             xAxis = []
             yAxis = []
+            xTick = []
+            rep = 0
 
             for line in file.readlines():
                 (value,dt) = line.split(maxsplit=1)
+
+                if(rep%10==0):xTick.append(dt.split('.')[0])#TODO: make into some function of near dates?
+                else:xTick.append('')
+
                 dt=parseDT(dt)
 
                 xAxis.append(dt.timestamp())
                 yAxis.append(math.floor(float(value)))
 
-            plt.plot(xAxis, yAxis)
+                rep+=1
+
+            with plt.xkcd():
+                plt.plot(xAxis, yAxis)
+                #plt.xlabel#fill
+                plt.xticks(xAxis,xTick)#display labels for x axis
+            plt.get_current_fig_manager().full_screen_toggle()#open in fullscreen
             plt.show()
 
 #get last index value
@@ -109,8 +121,13 @@ save.close()
 def process(row: str):
     (symbol,weight) = row.split()
     w = float(weight)
+
     price=yf.Ticker(symbol).fast_info.last_price
     prev=yf.Ticker(symbol).fast_info.previous_close
+
+    #round to prevent equality check errors
+    price = round(price,2)
+    prev = round(prev,2)
 
     aux(price,prev)
     net = abs(price-prev)
@@ -137,7 +154,6 @@ if(not last == index):
     save.write(str(index) + " " + str(datetime.now()) + "\n")
     save.close()
 
-#inefficient, add clamps so we don't unnecessarily compute prevs
 if la: pr = prevs
 else: pr = last
 aux(index,prevs)
