@@ -116,10 +116,11 @@ for (opt,val) in lst:
                 #convert previous label to float
                 if(i>0):iprev = parseDT2(findLabel(xTick)).timestamp()
                 else:iprev=0
+                #min number of days since last label
+                interval = 31
 
                 #if far enough from previous label, add new label
-                #TODO: change previous reference to be previous labeled instead of just previous
-                if inRangeDT(iprev,newDT,31):xTick.append(dt.split('.')[0])
+                if inRangeDT(iprev,newDT,interval):xTick.append(dt.split('.')[0])
                 else:xTick.append('')
 
                 #add axis counters
