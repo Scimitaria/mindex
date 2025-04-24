@@ -18,26 +18,29 @@ arrow = ""
 #represents holdings yfinance doesn't have access to
 #bonds, core position, etc
 index = float(base)
-prevs = index
+prevcloseclose = index
 #whether to show all stocks
 all = False
 #whether to show last price
 #default is previous close
-la = False
+isLastPrice = False
+
+epsilon = 0.0001
 
 #for print color
 def aux(one: float, two: float):
     global color
     global arrow
-    if  (one<two):
-        color = 'red'
-        arrow = "   v "
-    elif(one>two):
-        color = 'green'
-        arrow = "   ^ "
-    else: 
+    if abs(one - two) > epsilon:
+        if  (one<two):
+            color = 'red'
+            arrow = "   v "
+        elif(one>two):
+            color = 'green'
+            arrow = "   ^ "
+    else:
         color = 'white'
-        arrow = "no change "
+        arrow = " no change "
 
 #prints an aligned grid
 def alignPrint(rows):
@@ -63,6 +66,22 @@ def alignPrint(rows):
 def parseDT(str):
     format = "%Y-%m-%d %H:%M:%S.%f"
     return datetime.strptime(str.rstrip(),format)
+#different format
+def parseDT2(str):
+    format = "%Y-%m-%d %H:%M:%S"
+    return datetime.strptime(str.rstrip(),format)
+
+#finds distance between dates
+def inRangeDT(d1,d2,diff):
+    return ((abs(d2-d1)/86400)>diff)
+
+#finds last label
+def findLabel(lst):
+    ret='2025-02-27 15:27:30'
+    for i in range(len(lst)-1):
+        e=lst[i]
+        if not (e==''):ret=e
+    return ret
 
 #flags
 try:(lst,args) = getopt.getopt(sys.argv[1:],"halg",["help =","all =","last =","graph ="])
@@ -81,27 +100,35 @@ for (opt,val) in lst:
     if opt in ['-a','--all']:
         all = True
     if opt in ['-l','--last']:
-        la = True
+        isLastPrice = True
     if opt in ['-g','--graph']:
         with open ('index.csv','r') as file:
-            xAxis = []
-            yAxis = []
-            xTick = []
+            xAxis = [] #numbers for x axis
+            yAxis = [] #numbers for y axis
+            xTick = [] #labels for x axis
             rep = 0
 
-            for line in file.readlines():
-                (value,dt) = line.split(maxsplit=1)
+            lines = file.readlines()
+            for i in range(len(lines)):
+                (value,dt) = lines[i].split(maxsplit=1)
+                newDT=parseDT(dt).timestamp()#convert from string to float
 
-                if(rep%10==0):xTick.append(dt.split('.')[0])#TODO: make into some function of near dates?
+                #convert previous label to float
+                if(i>0):iprev = parseDT2(findLabel(xTick)).timestamp()
+                else:iprev=0
+
+                #if far enough from previous label, add new label
+                #TODO: change previous reference to be previous labeled instead of just previous
+                if inRangeDT(iprev,newDT,31):xTick.append(dt.split('.')[0])
                 else:xTick.append('')
 
-                dt=parseDT(dt)
-
-                xAxis.append(dt.timestamp())
+                #add axis counters
+                xAxis.append(newDT)
                 yAxis.append(math.floor(float(value)))
 
                 rep+=1
 
+            #draw graph
             with plt.xkcd():
                 plt.plot(xAxis, yAxis)
                 #plt.xlabel#fill
@@ -125,10 +152,6 @@ def process(row: str):
     price=yf.Ticker(symbol).fast_info.last_price
     prev=yf.Ticker(symbol).fast_info.previous_close
 
-    #round to prevent equality check errors
-    price = round(price,2)
-    prev = round(prev,2)
-
     aux(price,prev)
     net = abs(price-prev)
     perc = (net/prev)*100
@@ -140,13 +163,15 @@ def process(row: str):
     #update indexes
     global index
     index+=(price*w)
-    if la:
-        global prevs
-        prevs+=(prev*w)
+    global prevclose
+    prevclose+=(prev*w)
 
 #multithread it
 with ThreadPoolExecutor() as executor:
     executor.map(process, tickers)
+
+#round to prevent equality check errors
+index=round(index,2)
 
 #adds value to index.csv
 if(not last == index):
@@ -154,7 +179,10 @@ if(not last == index):
     save.write(str(index) + " " + str(datetime.now()) + "\n")
     save.close()
 
-if la: pr = prevs
-else: pr = last
-aux(index,prevs)
-print(colored("Morgan's Brokerage Index: " + str(index/100) + "\n" + arrow + str(abs(index/100-pr/100)) + arrow + str((abs(index-pr)/pr)*100) + "%",color))
+if isLastPrice: other = prevclose
+else: other = last
+aux(index,other)
+
+line1 = "Morgan's Brokerage Index:" + str(index/100) + "\n"
+line2 = arrow + str(abs(index/100-other/100)) + arrow + str((abs(index-other)/other)*100) + "%"
+print(colored(line1 + line2,color))
