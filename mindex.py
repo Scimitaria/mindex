@@ -6,7 +6,7 @@ import math
 import matplotlib.pyplot as plt
 from termcolor import colored
 from datetime import datetime
-
+#TODO: make csvs comma instead of space
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -110,7 +110,7 @@ for (opt,val) in lst:
 
             lines = file.readlines()
             for i in range(len(lines)):
-                (value,dt) = lines[i].split(maxsplit=1)
+                (value,dt) = lines[i].split(",")
                 newDT=parseDT(dt).timestamp()#convert from string to float
 
                 #convert previous label to float
@@ -140,14 +140,14 @@ for (opt,val) in lst:
 #get last index value
 save = open('index.csv','r')
 vals = save.readlines()
-(l,d,t) = (vals[len(vals)-1]).split()
-day = d
+(l,dt) = (vals[len(vals)-1]).split(",")
+day = dt.split()
 last = float(l)
 save.close()
 
 #get info and process it
 def process(row: str):
-    (symbol,weight) = row.split()
+    (symbol,weight) = row.split(",")
     w = float(weight)
 
     price=yf.Ticker(symbol).fast_info.last_price
@@ -177,7 +177,7 @@ index=round(index,2)
 #adds value to index.csv
 if(not last == index):
     save = open('index.csv','a')
-    save.write(str(index) + " " + str(datetime.now()) + "\n")
+    save.write(str(index) + "," + str(datetime.now()) + "\n")
     save.close()
 
 if isLastPrice: other = prevclose
