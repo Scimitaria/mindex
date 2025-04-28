@@ -6,7 +6,7 @@ import math
 import matplotlib.pyplot as plt
 from termcolor import colored
 from datetime import datetime
-#TODO: make csvs comma instead of space
+
 with open('tickrs.csv','r') as file:
     items = file.readlines()
     base = items[0]
@@ -64,12 +64,19 @@ def alignPrint(rows):
 
 #parses datetime from string
 def parseDT(str):
-    format = "%Y-%m-%d %H:%M:%S.%f"
-    return datetime.strptime(str.rstrip(),format)
-#different format
-def parseDT2(str):
-    format = "%Y-%m-%d %H:%M:%S"
-    return datetime.strptime(str.rstrip(),format)
+    try: 
+        format = "%Y-%m-%d %H:%M:%S.%f"
+        return datetime.strptime(str.rstrip(),format)
+    except:
+        try:
+            format = "%Y-%m-%d %H:%M:%S"
+            return datetime.strptime(str.rstrip(),format)
+        except:
+            try:
+                format = "%Y-%m-%d"
+                return datetime.strptime(str.rstrip(),format)
+            except:
+                raise Exception("error parsing datetime")
 
 #finds distance between dates
 def inRangeDT(d1,d2,diff):
@@ -106,21 +113,27 @@ for (opt,val) in lst:
             xAxis = [] #numbers for x axis
             yAxis = [] #numbers for y axis
             xTick = [] #labels for x axis
+
             rep = 0
 
             lines = file.readlines()
+
+            #min number of days since last label
+            if args: interval=int(args[0])
+            else:interval = 31
+
             for i in range(len(lines)):
                 (value,dt) = lines[i].split(",")
+                day=dt.split()[0]
                 newDT=parseDT(dt).timestamp()#convert from string to float
 
                 #convert previous label to float
-                if(i>0):iprev = parseDT2(findLabel(xTick)).timestamp()
+                if(i>0):iprev = parseDT(findLabel(xTick)).timestamp()
                 else:iprev=0
-                #min number of days since last label
-                interval = 31
 
                 #if far enough from previous label, add new label
-                if inRangeDT(iprev,newDT,interval):xTick.append(dt.split('.')[0])
+                #w/ time: dt.split('.')[0]
+                if inRangeDT(iprev,newDT,interval):xTick.append(day)
                 else:xTick.append('')
 
                 #add axis counters
