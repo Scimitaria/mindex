@@ -6,11 +6,11 @@ This program requires two supplemental files.
 tickrs.csv should contain the amount of holdings that Yahoo Finance can't access on the first line, followed by weighted holdings:
 ```
 50000
-BTEAF 1000
-GME 420
+BTEAF,1000
+GME,420
 ```
 
 index.csv holds save data for past index values and their dates:
 ```
-420.69 2001-09-11 15:27:30.806697
+420.69,2001-09-11 15:27:30.806697
 ```
