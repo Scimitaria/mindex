@@ -98,8 +98,8 @@ for (opt,val) in lst:
         rows = [
             ["-a", "--all",   "Print all tickers."],
             ["-l", "--last",  "Compute change based on last index value."],
-            ["-g", "--graph", "Show a graph of past index values."],
-            ["-h", "--help", "Print help message and exit."]
+            ["-g", "--graph", "Show a graph of past index values. Can add date display interval as an argument."],
+            ["-h", "--help",  "Print help message and exit."]
         ]
         alignPrint(rows)
         print("Warning: last only affects the index value")
