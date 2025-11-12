@@ -18,7 +18,7 @@ arrow = ""
 #represents holdings yfinance doesn't have access to
 #bonds, core position, etc
 index = float(base)
-prevcloseclose = index
+prevclose = index
 #whether to show all stocks
 all = False
 #whether to show last price
@@ -51,7 +51,7 @@ def alignPrint(rows):
             lengths[i] = max(lengths.get(i, 0), len(row[i]))
 
     for row in rows:
-        # For each cell, padd it by the max length
+        # For each cell, pad it by the max length
         output = ""
         for i in range(len(row)):
             if len(output) > 0:
