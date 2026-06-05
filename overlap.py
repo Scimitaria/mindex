@@ -4,18 +4,20 @@ def to_float(str):
     if str[-1] == '%': return float(str[:-1])
     return float(str)
 def is_ticker(ticker):
-    return re.fullmatch(r"[A-Z:1-9.]+",ticker)
+    return re.fullmatch(r"[*A-Z:1-9.]+",ticker)
 def is_percent(pct):
     return re.fullmatch(r"^-?\d+\.\d+\%?",pct)
+def compute_pct(amt,tot):
+    return float(amt)/tot
 
-def read_dict(path,ticker_index=0,pct_index=-1):
+def read_dict(path,ticker_index=0,pct_index=-1,total=None):
     holdings={}
     with open(path) as f: items = f.readlines()
     for str in items:
         line = str.split()
         try:
             ticker = line[ticker_index]
-            pct = line[pct_index]
+            pct = compute_pct(line[pct_index],total) if total else line[pct_index]
         except IndexError:
             #if line is formatted incorrectly, it's not a holding
             continue
@@ -29,8 +31,8 @@ def read_dict(path,ticker_index=0,pct_index=-1):
 overlap = 0.0
 overlapping_holdings = 0
 computed=[]
-fund1 = read_dict('overlap/fund1.txt',-4,-5)
-fund2 = read_dict('overlap/fund2.txt')
+fund1 = read_dict('overlap/FBGRX.txt',-4,-5)
+fund2 = read_dict('overlap/FOCPX.txt',-4,-5)
 
 for ticker,pct in fund1.items():
     if ticker in fund2:
@@ -42,5 +44,5 @@ for ticker,pct in fund2.items():
     if ticker in fund1:
         overlap += min(fund1[ticker],fund2[ticker])
         overlapping_holdings += 1
-print("Overlap: %f" % overlap)
+print(f"Overlap: {overlap:g}")
 print("Overlapping holdings: %d" % overlapping_holdings)
