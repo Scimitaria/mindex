@@ -1,10 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
-import yfinance as yf
+import yfinance as yf # type: ignore
 import getopt
 import sys
 import math
-import matplotlib.pyplot as plt
-from termcolor import colored
+import matplotlib.pyplot as plt # type: ignore
+from termcolor import colored # type: ignore
 from datetime import datetime
 
 with open('tickrs.csv','r') as file:
