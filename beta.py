@@ -1,7 +1,7 @@
 import statistics
 
-rm = [] #market return
-ri = [] #security return
+#rm = market return
+#ri = security return
 
-beta = statistics.covariance(ri,rm)/statistics.variance(rm)
-print(beta)
+def beta(rm,ri):
+    return statistics.covariance(ri,rm)/statistics.variance(rm)
