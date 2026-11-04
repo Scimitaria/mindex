@@ -32,7 +32,7 @@ overlap = 0.0
 overlapping_holdings = 0
 computed=[]
 fund1 = read_dict('overlap/FBGRX.txt',-4,-5)
-fund2 = read_dict('overlap/FCNTX.txt',-4,-5)
+fund2 = read_dict('overlap/PAGRX.txt',0,1)
 
 for ticker,pct in fund1.items():
     if ticker in fund2:
